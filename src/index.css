@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
+  --color-accent-500: #f59e0b;
+  --color-accent-600: #d97706;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans antialiased;
+  }
+}
+
+/* Badge Preview Container */
+.badge-preview-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #E5E7EB;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  min-height: 500px;
+}
+
+/* Base Badge Style - using absolute positioning over template */
+.badge-wrapper {
+  position: relative;
+  width: 400px; /* Aspect ratio matches typical badges */
+  height: 600px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  overflow: hidden;
+  background-color: white; /* Fallback */
+}
+
+.badge-photo {
+  position: absolute;
+  object-fit: cover;
+}
+
+.badge-text {
+  position: absolute;
+  text-align: center;
+  width: 100%;
+  font-weight: bold;
+}
+
+/* -----------------------------
+   PRINT STYLES
+------------------------------ */
+@media print {
+  /* Suppression de tous les autres éléments */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* Cacher les marges et scroll */
+  body, html {
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+
+  /* Forcer l'impression des couleurs de fond et images (TRÈS IMPORTANT POUR LES BADGES) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Seule la page A4 est visible */
+  .print-page, .print-page * {
+    visibility: visible;
+  }
+  
+  .print-page {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 794px; /* A4 width at 96 DPI */
+    height: 1123px; /* A4 height at 96 DPI */
+    margin: 0;
+    padding: 0;
+    box-shadow: none !important;
+  }
+
+  /* Nettoyage du wrapper du badge à l'impression */
+  .print-page .badge-wrapper {
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 0; /* Pas de marge pour exploiter tout le A4 */
+  }
+}
