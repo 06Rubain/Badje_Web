@@ -59,3 +59,8 @@ L'onglet **Administration** (accessible via l'icône de rouage) vous permet de :
 - Gérer les programmes actifs.
 - Vider la base de données locale si vous avez terminé un événement.
 - Synchroniser les données sur un Cloud Firebase (si configuré) pour retrouver vos étudiants sur un autre ordinateur.
+
+---
+
+> 💡 **Message de l'entreprise OmniCom :**
+> Toute l'équipe de **OmniCom** souhaite bonne chance et plein de succès à tous les développeurs et développeuses qui lisent cette documentation ou qui continuent le développement de ce projet ! 🚀✨

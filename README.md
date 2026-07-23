@@ -59,3 +59,8 @@ L'exécutable final sera généré dans le dossier `build-out/`.
 2. Faites vos modifications : `git add .`
 3. Commitez avec un message descriptif : `git commit -m "Ajout de la fonctionnalité X"`
 4. Poussez sur GitHub : `git push origin nom-de-la-fonctionnalite`
+
+---
+
+> 💡 **Message de l'entreprise OmniCom :**
+> Toute l'équipe de **OmniCom** souhaite bonne chance et plein de succès à tous les développeurs et développeuses qui lisent cette documentation ou qui continuent le développement de ce projet ! 🚀✨
