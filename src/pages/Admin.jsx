@@ -4,7 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../utils/db';
 import { ExcellentiaBadge, LualabaBadge, WantashiBadge } from '../components/Badges';
 import ExcelImport from '../components/ExcelImport';
-import { registerExternalStudent, getExternalStudents, deleteExternalStudent, clearExternalStudents } from '../services/api';
+import { registerExternalStudent, getExternalStudents, deleteExternalStudent, clearExternalStudents, getApiBaseUrl, setApiBaseUrl } from '../services/api';
 import { pushToCloud } from '../services/cloudSync';
 
 const Admin = ({ activePrograms, setActivePrograms, onLogout }) => {
@@ -25,6 +25,7 @@ const Admin = ({ activePrograms, setActivePrograms, onLogout }) => {
   // État pour la synchronisation
   const [syncStatus, setSyncStatus] = useState('idle'); // idle, syncing, success, error
   const [syncMessage, setSyncMessage] = useState('');
+  const [apiBaseUrl, setApiBaseUrlState] = useState(getApiBaseUrl());
 
   // Pagination historique
   const [historyCurrentPage, setHistoryCurrentPage] = useState(1);
@@ -479,6 +480,37 @@ const Admin = ({ activePrograms, setActivePrograms, onLogout }) => {
         {/* Contenu Principal (Onglets + Vues) */}
         <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl rounded-3xl shadow-xl border border-white/50 dark:border-slate-700/50 overflow-hidden">
           
+          {/* Section Configuration Réseau Local */}
+          <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl rounded-3xl shadow-xl border border-white/50 dark:border-slate-800 p-6 mb-8 flex flex-col lg:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-primary-600 dark:text-primary-400">
+                <Cloud size={24} />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Serveur Central (Réseau Local)</h2>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">Configurez l'adresse IP du serveur maître pour que les postes partagent la même base.</p>
+              </div>
+            </div>
+            <div className="flex w-full lg:w-auto items-center gap-2">
+              <input
+                type="text"
+                placeholder="Ex: http://192.168.1.100:3000/api"
+                value={apiBaseUrl}
+                onChange={(e) => setApiBaseUrlState(e.target.value)}
+                className="flex-1 w-full lg:w-80 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary-500"
+              />
+              <button
+                onClick={() => {
+                  setApiBaseUrl(apiBaseUrl);
+                  alert("✅ L'adresse du serveur local a été sauvegardée !");
+                }}
+                className="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm whitespace-nowrap"
+              >
+                Enregistrer
+              </button>
+            </div>
+          </div>
+
           {/* Section Synchronisation Cloud */}
           <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl rounded-3xl shadow-xl border border-white/50 dark:border-slate-800 overflow-hidden mb-8">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 flex flex-col md:flex-row items-center justify-between">

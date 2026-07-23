@@ -12,7 +12,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "app:dev": "concurrently -k \"cross-env BROWSER=none vite --port 5173 --strictPort\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
-    "app:build": "npm run build && electron-builder"
+    "app:build": "npm run build && electron-builder",
+    "start:server": "node server-local/server.js"
   },
   "build": {
     "appId": "com.badjeweb.app",
@@ -29,8 +30,10 @@
     }
   },
   "dependencies": {
+    "cors": "^2.8.6",
     "dexie": "^4.4.4",
     "dexie-react-hooks": "^4.4.0",
+    "express": "^5.2.1",
     "firebase": "^12.16.0",
     "html2canvas": "^1.4.1",
     "html2canvas-pro": "^2.2.4",
@@ -39,6 +42,8 @@
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-router-dom": "^7.18.1",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^6.0.1",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

@@ -11,8 +11,19 @@
  * ====================================================================
  */
 
-// 🔧 Remplacez cette URL par celle de votre API réelle
-const API_BASE_URL = null; // Ex: 'https://votre-serveur.com/api'
+// Fonction pour récupérer l'URL de l'API depuis le localStorage
+export const getApiBaseUrl = () => {
+  return localStorage.getItem('API_BASE_URL') || '';
+};
+
+// Fonction pour sauvegarder l'URL de l'API
+export const setApiBaseUrl = (url) => {
+  if (url && url.trim() !== '') {
+    localStorage.setItem('API_BASE_URL', url.trim());
+  } else {
+    localStorage.removeItem('API_BASE_URL');
+  }
+};
 
 // ─── Données fictives pour le simulateur avec persistance localStorage ────
 const getInitialStudents = () => {
@@ -54,9 +65,10 @@ const saveStudentsToLocalStorage = () => {
 export async function searchExternalStudents(query) {
   if (!query || query.trim().length < 2) return [];
 
-  if (API_BASE_URL) {
+  const baseUrl = getApiBaseUrl();
+  if (baseUrl) {
     try {
-      const response = await fetch(`${API_BASE_URL}/students/search?q=${encodeURIComponent(query)}`);
+      const response = await fetch(`${baseUrl}/students/search?q=${encodeURIComponent(query)}`);
       if (!response.ok) throw new Error('Erreur réseau');
       const data = await response.json();
       return data;
@@ -83,9 +95,10 @@ export async function searchExternalStudents(query) {
  * @returns {Promise<Object>} - L'étudiant enregistré (avec un ID serveur)
  */
 export async function registerExternalStudent(studentData) {
-  if (API_BASE_URL) {
+  const baseUrl = getApiBaseUrl();
+  if (baseUrl) {
     try {
-      const response = await fetch(`${API_BASE_URL}/students`, {
+      const response = await fetch(`${baseUrl}/students`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(studentData),
@@ -145,9 +158,10 @@ export async function registerExternalStudent(studentData) {
  * @returns {Promise<Array>}
  */
 export async function getExternalStudents() {
-  if (API_BASE_URL) {
+  const baseUrl = getApiBaseUrl();
+  if (baseUrl) {
     try {
-      const response = await fetch(`${API_BASE_URL}/students`);
+      const response = await fetch(`${baseUrl}/students`);
       if (!response.ok) throw new Error('Erreur réseau');
       return await response.json();
     } catch (error) {
@@ -167,9 +181,10 @@ export async function getExternalStudents() {
  * @param {string} id - L'ID de l'étudiant
  */
 export async function deleteExternalStudent(id) {
-  if (API_BASE_URL) {
+  const baseUrl = getApiBaseUrl();
+  if (baseUrl) {
     try {
-      const response = await fetch(`${API_BASE_URL}/students/${id}`, { method: 'DELETE' });
+      const response = await fetch(`${baseUrl}/students/${id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Erreur réseau');
       return true;
     } catch (error) {
@@ -189,10 +204,11 @@ export async function deleteExternalStudent(id) {
  * Vide complètement la base de données externe
  */
 export async function clearExternalStudents() {
-  if (API_BASE_URL) {
+  const baseUrl = getApiBaseUrl();
+  if (baseUrl) {
     try {
       // Si API réelle, il faudrait une route spécifique ou itérer
-      const response = await fetch(`${API_BASE_URL}/students/clear`, { method: 'DELETE' });
+      const response = await fetch(`${baseUrl}/students/clear`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Erreur réseau');
       return true;
     } catch (error) {
