@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, ToggleLeft, ToggleRight, CheckCircle2, XCircle, Printer, Trash2, Search, RotateCcw, History, CheckSquare, Square, FileUp, Users, ChevronLeft, ChevronRight, GraduationCap, Loader2, Lock, Cloud, UploadCloud } from 'lucide-react';
+import { ShieldCheck, ToggleLeft, ToggleRight, CheckCircle2, XCircle, Printer, Trash2, Search, RotateCcw, History, CheckSquare, Square, FileUp, Users, ChevronLeft, ChevronRight, GraduationCap, Loader2, Lock, Cloud, UploadCloud, Settings, AlertCircle } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../utils/db';
 import { ExcellentiaBadge, LualabaBadge, WantashiBadge } from '../components/Badges';
 import ExcelImport from '../components/ExcelImport';
 import { registerExternalStudent, getExternalStudents, deleteExternalStudent, clearExternalStudents, getApiBaseUrl, setApiBaseUrl } from '../services/api';
 import { pushToCloud } from '../services/cloudSync';
+import { updateAdminPassword } from '../utils/crypto';
 
 const Admin = ({ activePrograms, setActivePrograms, onLogout }) => {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
   // Onglets & sélection d'historique
-  const [activeTab, setActiveTab] = useState('queue'); // 'queue', 'history', 'import', 'students'
+  const [activeTab, setActiveTab] = useState('queue'); // 'queue', 'history', 'students', 'import', 'settings'
   const [historySearchTerm, setHistorySearchTerm] = useState('');
   const [selectedBadgeIds, setSelectedBadgeIds] = useState([]);
 
@@ -26,6 +27,7 @@ const Admin = ({ activePrograms, setActivePrograms, onLogout }) => {
   const [syncStatus, setSyncStatus] = useState('idle'); // idle, syncing, success, error
   const [syncMessage, setSyncMessage] = useState('');
   const [apiBaseUrl, setApiBaseUrlState] = useState(getApiBaseUrl());
+  const [newAdminPassword, setNewAdminPassword] = useState('');
 
   // Pagination historique
   const [historyCurrentPage, setHistoryCurrentPage] = useState(1);
@@ -480,92 +482,15 @@ const Admin = ({ activePrograms, setActivePrograms, onLogout }) => {
         {/* Contenu Principal (Onglets + Vues) */}
         <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl rounded-3xl shadow-xl border border-white/50 dark:border-slate-700/50 overflow-hidden">
           
-          {/* Section Configuration Réseau Local */}
-          <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl rounded-3xl shadow-xl border border-white/50 dark:border-slate-800 p-6 mb-8 flex flex-col lg:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-primary-600 dark:text-primary-400">
-                <Cloud size={24} />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-slate-800 dark:text-white">Serveur Central (Réseau Local)</h2>
-                <p className="text-slate-500 dark:text-slate-400 text-sm">Configurez l'adresse IP du serveur maître pour que les postes partagent la même base.</p>
-              </div>
-            </div>
-            <div className="flex w-full lg:w-auto items-center gap-2">
-              <input
-                type="text"
-                placeholder="Ex: http://192.168.1.100:3000/api"
-                value={apiBaseUrl}
-                onChange={(e) => setApiBaseUrlState(e.target.value)}
-                className="flex-1 w-full lg:w-80 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-primary-500"
-              />
-              <button
-                onClick={() => {
-                  setApiBaseUrl(apiBaseUrl);
-                  alert("✅ L'adresse du serveur local a été sauvegardée !");
-                }}
-                className="bg-primary-600 hover:bg-primary-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm whitespace-nowrap"
-              >
-                Enregistrer
-              </button>
-            </div>
-          </div>
-
-          {/* Section Synchronisation Cloud */}
-          <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl rounded-3xl shadow-xl border border-white/50 dark:border-slate-800 overflow-hidden mb-8">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 flex flex-col md:flex-row items-center justify-between">
-              <div className="flex items-center gap-4 text-white">
-                <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
-                  <Cloud size={28} />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">Synchronisation Cloud (Fin de journée)</h2>
-                  <p className="text-blue-100 text-sm">Poussez les données de ce PC vers la base centrale Firebase.</p>
-                </div>
-              </div>
-              <div className="mt-4 md:mt-0 flex flex-col items-center">
-                <button
-                  onClick={handleCloudSync}
-                  disabled={syncStatus === 'syncing'}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-full font-bold transition-all shadow-lg ${
-                    syncStatus === 'syncing' 
-                      ? 'bg-blue-400/50 text-white cursor-not-allowed' 
-                      : syncStatus === 'success'
-                        ? 'bg-green-500 text-white hover:bg-green-400'
-                        : syncStatus === 'error'
-                          ? 'bg-red-500 text-white hover:bg-red-400'
-                          : 'bg-white text-blue-700 hover:bg-blue-50 hover:scale-105'
-                  }`}
-                >
-                  {syncStatus === 'syncing' ? (
-                    <><Loader2 size={20} className="animate-spin" /> Synchronisation...</>
-                  ) : syncStatus === 'success' ? (
-                    <><CheckCircle2 size={20} /> Synchronisé !</>
-                  ) : syncStatus === 'error' ? (
-                    <><AlertCircle size={20} /> Échec de la Synchro</>
-                  ) : (
-                    <><UploadCloud size={20} /> Pousser vers le Cloud</>
-                  )}
-                </button>
-                {syncMessage && (
-                  <p className={`mt-2 text-xs font-medium ${
-                    syncStatus === 'error' ? 'text-red-200' : 'text-blue-100'
-                  }`}>
-                    {syncMessage}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
           {/* Navigation par Onglets (Pills) */}
           <div className="p-4 border-b border-slate-200/50 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-950/20 overflow-x-auto">
             <div className="flex gap-2 min-w-max">
               {[
-                { id: 'queue', icon: Printer, label: "Impression & Config" },
+                { id: 'queue', icon: Printer, label: "Impression & Production" },
                 { id: 'history', icon: History, label: "Historique" },
                 { id: 'students', icon: Users, label: "Liste Étudiants" },
                 { id: 'import', icon: FileUp, label: "Import Excel" },
+                { id: 'settings', icon: Settings, label: "Paramètres Systèmes" },
               ].map(tab => (
                 <button
                   key={tab.id}
@@ -865,7 +790,7 @@ const Admin = ({ activePrograms, setActivePrograms, onLogout }) => {
               );
             })()}
           </div>
-        ) : (
+        ) : activeTab === 'history' ? (
           /* Onglet Historique & Regroupement A4 */
           <div className="p-8 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1003,7 +928,130 @@ const Admin = ({ activePrograms, setActivePrograms, onLogout }) => {
               );
             })()}
           </div>
-        )}
+        ) : activeTab === 'settings' ? (
+          <div className="p-8 space-y-8">
+            <div>
+              <h2 className="text-xl font-black text-slate-800 dark:text-white mb-1">Paramètres du Système</h2>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">Configurez le réseau local, le chiffrement de la sécurité et la synchronisation Cloud.</p>
+            </div>
+
+            {/* 1. Configuration Réseau Local */}
+            <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-2xl p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-sm">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-3.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl">
+                    <Cloud size={26} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800 dark:text-white">1. Serveur Central (Réseau Local 100 PCs)</h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">Adresse IP du PC Maître (ex: http://192.168.1.100:3000/api)</p>
+                  </div>
+                </div>
+                <div className="flex w-full lg:w-auto items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="Ex: http://192.168.1.100:3000/api"
+                    value={apiBaseUrl}
+                    onChange={(e) => setApiBaseUrlState(e.target.value)}
+                    className="flex-1 w-full lg:w-80 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 outline-none text-sm font-medium"
+                  />
+                  <button
+                    onClick={() => {
+                      setApiBaseUrl(apiBaseUrl);
+                      alert("✅ L'adresse du serveur local a été sauvegardée !");
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm whitespace-nowrap text-sm"
+                  >
+                    Enregistrer
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Sécurité Mot de passe SHA-256 */}
+            <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-2xl p-6 border border-slate-200/80 dark:border-slate-700/80 shadow-sm">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-3.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl">
+                    <Lock size={26} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800 dark:text-white">2. Sécurité Accès Admin (Mot de passe Chiffré SHA-256)</h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">Définissez un nouveau mot de passe d'accès admin. Haché en SHA-256 cryptographique.</p>
+                  </div>
+                </div>
+                <div className="flex w-full lg:w-auto items-center gap-2">
+                  <input
+                    type="password"
+                    placeholder="Nouveau mot de passe"
+                    value={newAdminPassword}
+                    onChange={(e) => setNewAdminPassword(e.target.value)}
+                    className="flex-1 w-full lg:w-80 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-amber-500 outline-none text-sm font-medium"
+                  />
+                  <button
+                    onClick={async () => {
+                      try {
+                        await updateAdminPassword(newAdminPassword);
+                        setNewAdminPassword('');
+                        alert("🔒 Le mot de passe administrateur a été chiffré (SHA-256) et mis à jour avec succès !");
+                      } catch (err) {
+                        alert(err.message || "Erreur lors de la modification.");
+                      }
+                    }}
+                    className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm whitespace-nowrap text-sm"
+                  >
+                    Changer
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Synchronisation Cloud */}
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white shadow-md">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="p-3.5 bg-white/20 rounded-xl backdrop-blur-sm">
+                    <UploadCloud size={28} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold">3. Synchronisation Cloud (Firebase)</h3>
+                    <p className="text-blue-100 text-sm">Sauvegardez l'ensemble des données locales sur la base de données centrale Cloud.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleCloudSync}
+                  disabled={syncStatus === 'syncing'}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all shadow-lg text-sm ${
+                    syncStatus === 'syncing' 
+                      ? 'bg-blue-400/50 text-white cursor-not-allowed' 
+                      : syncStatus === 'success'
+                        ? 'bg-green-500 text-white hover:bg-green-400'
+                        : syncStatus === 'error'
+                          ? 'bg-red-500 text-white hover:bg-red-400'
+                          : 'bg-white text-blue-700 hover:bg-blue-50 hover:scale-105'
+                  }`}
+                >
+                  {syncStatus === 'syncing' ? (
+                    <><Loader2 size={18} className="animate-spin" /> Synchronisation...</>
+                  ) : syncStatus === 'success' ? (
+                    <><CheckCircle2 size={18} /> Synchronisé !</>
+                  ) : syncStatus === 'error' ? (
+                    <><AlertCircle size={18} /> Échec de la Synchro</>
+                  ) : (
+                    <><UploadCloud size={18} /> Pousser vers le Cloud</>
+                  )}
+                </button>
+              </div>
+              {syncMessage && (
+                <p className={`mt-3 text-xs font-medium ${
+                  syncStatus === 'error' ? 'text-red-200' : 'text-blue-100'
+                }`}>
+                  {syncMessage}
+                </p>
+              )}
+            </div>
+          </div>
+        ) : null}
       </div>
       </div>
     </>

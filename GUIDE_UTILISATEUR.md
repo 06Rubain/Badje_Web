@@ -62,5 +62,26 @@ L'onglet **Administration** (accessible via l'icône de rouage) vous permet de :
 
 ---
 
+## 🌐 Mode 100 PCs : Utilisation du Serveur Central (Réseau Local)
+
+Si vous devez travailler avec plusieurs ordinateurs (jusqu'à 100) situés dans la même pièce et connectés au même réseau (Wi-Fi ou câble), vous pouvez configurer un ordinateur "Maître" qui stockera toutes les données pour les autres.
+
+### Rôle de l'Ordinateur Maître (Serveur)
+C'est le "Cerveau". Il doit rester allumé pendant toute l'opération.
+1. **Trouvez son adresse IP** : Ouvrez l'invite de commande (`cmd`) et tapez `ipconfig`. Notez l'**Adresse IPv4** (ex: `192.168.1.50`).
+2. **Démarrez la base de données** : Dans le dossier de l'application, ouvrez un terminal et tapez `npm run start:server`.
+3. *Le serveur affichera un message confirmant qu'il écoute sur le port 3000.*
+
+### Rôle des Ordinateurs Clients (Les 100 autres PCs)
+Ce sont les ordinateurs qui vont créer les badges et chercher les étudiants.
+1. Lancez l'application normalement.
+2. Allez dans l'onglet **Administration** ⚙️.
+3. Dans la section **Serveur Central (Réseau Local)**, saisissez l'adresse de l'ordinateur Maître sous ce format : `http://VOTRE_IP:3000/api` (ex: `http://192.168.1.50:3000/api`).
+4. Cliquez sur **Enregistrer**.
+
+Dès lors, toutes les données ajoutées ou recherchées sur un ordinateur Client seront instantanément synchronisées avec le Maître !
+
+---
+
 > 💡 **Message de l'entreprise OmniCom :**
 > Toute l'équipe de **OmniCom** souhaite bonne chance et plein de succès à tous les développeurs et développeuses qui lisent cette documentation ou qui continuent le développement de ce projet ! 🚀✨

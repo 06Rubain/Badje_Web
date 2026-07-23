@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Lock, ArrowRight, ShieldAlert } from 'lucide-react';
+import { verifyAdminPassword } from '../utils/crypto';
 
 const AdminAuth = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const auth = sessionStorage.getItem('adminAuth');
@@ -13,15 +15,25 @@ const AdminAuth = ({ children }) => {
     }
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (password === 'admin2026') {
-      sessionStorage.setItem('adminAuth', 'true');
-      setIsAuthenticated(true);
-      setError(false);
-    } else {
+    if (!password) return;
+    setIsSubmitting(true);
+    try {
+      const isValid = await verifyAdminPassword(password);
+      if (isValid) {
+        sessionStorage.setItem('adminAuth', 'true');
+        setIsAuthenticated(true);
+        setError(false);
+      } else {
+        setError(true);
+        setPassword('');
+      }
+    } catch (err) {
+      console.error('Erreur d\'authentification:', err);
       setError(true);
-      setPassword('');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
