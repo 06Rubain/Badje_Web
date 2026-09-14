@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ShieldCheck, ToggleLeft, ToggleRight, CheckCircle2, XCircle, Printer, Trash2, Search, RotateCcw, History, CheckSquare, Square, FileUp, Users, ChevronLeft, ChevronRight, GraduationCap, Loader2, Lock, Cloud, UploadCloud, Settings, AlertCircle } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../utils/db';
@@ -6,9 +6,43 @@ import { ExcellentiaBadge, LualabaBadge, WantashiBadge } from '../components/Bad
 import ExcelImport from '../components/ExcelImport';
 import { registerExternalStudent, getExternalStudents, deleteExternalStudent, clearExternalStudents, getApiBaseUrl, setApiBaseUrl } from '../services/api';
 import { pushToCloud } from '../services/cloudSync';
-import { updateAdminPassword } from '../utils/crypto';
+import { updateAdminPassword, verifyAdminPassword } from '../utils/crypto';
+import { exportToPng, exportToPdf } from '../utils/export';
+import '../styles/export.css';
 
 const Admin = ({ activePrograms, setActivePrograms, onLogout }) => {
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminPasswordError, setAdminPasswordError] = useState(false);
+  const [adminPasswordSubmitting, setAdminPasswordSubmitting] = useState(false);
+
+
+  const verifyAdminPasswordHandler = async (e) => {
+    e.preventDefault();
+    if (!adminPassword) return;
+    setAdminPasswordSubmitting(true);
+    try {
+      const isValid = await verifyAdminPassword(adminPassword);
+      if (isValid) {
+        setAdminPasswordError(false);
+        // Additional admin verification logic if needed
+      } else {
+        setAdminPasswordError(true);
+        setAdminPassword('');
+      }
+    } catch (err) {
+      console.error('Erreur d\'authentification admin:', err);
+      setAdminPasswordError(true);
+    } finally {
+      setAdminPasswordSubmitting(false);
+    }
+  };
+
+  const [isAdminAuth, setIsAdminAuth] = useState(false);
+  useEffect(() => {
+    setIsAdminAuth(sessionStorage.getItem('adminAuth') === 'true');
+  }, []);
+  const pageRef = useRef(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -275,7 +309,14 @@ const Admin = ({ activePrograms, setActivePrograms, onLogout }) => {
 
   return (
     <>
+      <button type="button" className="export-btn" onClick={(e)=>{console.log('Export button clicked'); e.stopPropagation(); setShowExportMenu(!showExportMenu);}}>Export</button>
       {/* Conteneur d'impression / Aperçu A4 */}
+      {showExportMenu && (
+        <div className="export-menu">
+          <button onClick={() => exportToPdf(pageRef.current)}>Télécharger PDF</button>
+          <button onClick={() => exportToPng(pageRef.current)}>Télécharger PNG</button>
+        </div>
+      )}
       {isPreviewMode && (
         <div className="flex fixed inset-0 z-50 bg-slate-900/95 items-center justify-center print:hidden">
           
@@ -306,7 +347,7 @@ const Admin = ({ activePrograms, setActivePrograms, onLogout }) => {
           </div>
 
           {/* Feuille A4 - 794px × 1123px = taille réelle à 96dpi */}
-          <div 
+          <div ref={pageRef}
             className="bg-white shadow-2xl"
             style={{
               width: '794px',
@@ -407,7 +448,7 @@ const Admin = ({ activePrograms, setActivePrograms, onLogout }) => {
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto space-y-8 print:hidden transition-all duration-300">
+      <div ref={pageRef} className="max-w-6xl mx-auto space-y-8 print:hidden transition-all duration-300">
         
         {/* Header & Stats Dashboard */}
         <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl rounded-3xl shadow-xl border border-white/50 dark:border-slate-700/50 p-6 md:p-8 overflow-hidden relative">
